@@ -1,3 +1,21 @@
+# What's the difference between the official release?
+
+
+所有聯想詞改成Windows預設的順序，方便習慣了的用家不用重新習慣聯想詞順序。
+
+因為所用的詞庫版本比較舊（從XP系統的相關字詞編輯工具上趴的)，如果有發現次序與Win10不一樣，請告訴我
+
+Windows關聯詞版[由此處下載](https://github.com/hoho97/openvanilla-kai/releases)
+
+
+-----------------------------
+
+
+
+# Official Readme Content
+
+
+
 # OpenVanilla 輸入法套件
 
 最新版本[由此處下載](https://github.com/openvanilla/openvanilla/releases)
