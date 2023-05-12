@@ -34,13 +34,6 @@
 @end
 
 @implementation OVGeneralPreferencesViewController
-@synthesize fieldCandidateSize = _fieldCandidateSize;
-@synthesize fieldCandidateSytle = _fieldCandidateSytle;
-@synthesize fieldAlphanumericKeyboardLayout = _fieldAlphanumericKeyboardLayout;
-@synthesize fieldPlaySound = _fieldPlaySound;
-@synthesize fieldCheckForUpdate = _fieldCheckForUpdate;
-@synthesize lastUpdateCheckDateLabel = _lastUpdateCheckDateLabel;
-@synthesize checkForUpdateButton = _checkForUpdateButton;
 
 - (void)awakeFromNib
 {
@@ -84,7 +77,7 @@
 
     [self.lastUpdateCheckDateLabel setHidden:NO];
 
-    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterShortStyle];
     [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
     NSString *lastCheckString = [NSString stringWithFormat:NSLocalizedString(@"Last checked: %@", nil), [dateFormatter stringFromDate:lastCheckDate]];
@@ -97,7 +90,7 @@
     [[OVUpdateChecker sharedInstance] checkForUpdate];
 }
 
- - (IBAction)updateField:(id)sender
+- (IBAction)updateField:(id)sender
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults setInteger:[[[self.fieldCandidateSize selectedItem] title] integerValue] forKey:OVCandidateListTextSizeKey];
@@ -110,8 +103,8 @@
 
     [self setSharedAlphanumericKeyboardLayout:[[self.fieldAlphanumericKeyboardLayout selectedItem] representedObject]];
 
-    [userDefaults setBool:([self.fieldPlaySound state] == NSOnState) forKey:OVMakeSoundFeedbackOnInputErrorKey];
-    [userDefaults setBool:([self.fieldCheckForUpdate state] == NSOnState) forKey:OVCheckForUpdateKey];
+    [userDefaults setBool:(self.fieldPlaySound.state == NSOnState) forKey:OVMakeSoundFeedbackOnInputErrorKey];
+    [userDefaults setBool:(self.fieldCheckForUpdate.state == NSOnState) forKey:OVCheckForUpdateKey];
     [userDefaults synchronize];
 }
 

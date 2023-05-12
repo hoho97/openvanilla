@@ -1,0 +1,21 @@
+name: Build
+on: [push]
+
+jobs:
+  build:
+    name: Build
+    runs-on: macOS-latest
+    steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/checkout@v1
+      - name: Clean
+        run: xcodebuild -scheme OpenVanilla -configuration Release clean
+      - name: Clean
+        run: xcodebuild -scheme OpenVanillaInstaller -configuration Release clean
+      - name: Build
+        run: xcodebuild -scheme OpenVanilla -configuration Release build
+      - name: Build
+        run: xcodebuild -scheme OpenVanillaInstaller -configuration Release build
+

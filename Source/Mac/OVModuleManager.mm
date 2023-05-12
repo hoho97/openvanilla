@@ -2,7 +2,7 @@
 // OVModuleManager.mm
 //
 // Copyright (c) 2004-2012 Lukhnos Liu (lukhnos at openvanilla dot org)
-// 
+//
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
 // files (the "Software"), to deal in the Software without
@@ -32,6 +32,7 @@
 #import "OVConstants.h"
 #import "OVIMArray.h"
 #import "OVIMTableBased.h"
+#import "OVIMBig5Code.h"
 #import "OVLoaderServiceImpl.h"
 #import "OVPlistBackedKeyValueMapImpl.h"
 #import "OVToolTipWindowController.h"
@@ -47,7 +48,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
     if (identifier.find(".") != string::npos) {
         return identifier;
     }
-    
+
     return string("org.openvanilla.module.") + identifier;
 }
 
@@ -61,14 +62,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
 @implementation OVModuleManager
 @dynamic activeInputMethodIdentifier;
 @dynamic sharedAlphanumericKeyboardLayoutIdentifier;
-@synthesize loaderService = _loaderService;
-@synthesize candidateService = _candidateService;
-@synthesize toolTipWindowController = _toolTipWindowController;
-@synthesize activeInputMethod = _activeInputMethod;
-@synthesize inputMethodMap = _inputMethodMap;
-@synthesize currentLocale = _currentLocale;
 @synthesize inputMethodIdentifiers = _inputMethodIdentifiers;
-@synthesize associatedPhrasesModule = _associatedPhrasesModule;
 
 + (OVModuleManager *)defaultManager
 {
@@ -91,7 +85,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
         _inputMethodMap = new OVInputMethodMap;
         _inputMethodIdentifiers = [[NSMutableArray alloc] init];
         _customTableBasedInputMethodIdentifierTableNameMap = [[NSMutableDictionary alloc] init];
-        _currentLocale = [@"en" retain];
+        _currentLocale = @"en";
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleLocaleChangeNotification:) name:NSCurrentLocaleDidChangeNotification object:nil];
 
@@ -122,17 +116,13 @@ static string InputMethodConfigIdentifier(const string& identifier)
     delete _loaderService;
     delete _candidateService;
 
-    [_toolTipWindowController release];
 
     for (OVInputMethodMap::iterator i = _inputMethodMap->begin(), e = _inputMethodMap->end(); i != e; ++i) {
         delete (*i).second;
     }
     delete _inputMethodMap;
     delete _associatedPhrasesModule;
-    
-    [_inputMethodIdentifiers release];
-    [_currentLocale release];
-    [super dealloc];
+
 }
 
 - (void)selectInputMethod:(NSString *)identifier
@@ -152,7 +142,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
         [[NSNotificationCenter defaultCenter] postNotificationName:OVModuleManagerDidUpdateActiveInputMethodNotification object:self];
     }
     else {
-        OVPlistBackedKeyValueMapImpl kvmi((CFStringRef)identifier);
+        OVPlistBackedKeyValueMapImpl kvmi((__bridge CFStringRef)identifier);
         OVKeyValueMap kvm(&kvmi);
         chosenInputMethod->loadConfig(&kvm, _loaderService);
         chosenInputMethod->saveConfig(&kvm, _loaderService);
@@ -176,7 +166,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
     }
     else {
         return nil;
-    }    
+    }
 }
 
 - (void)reload
@@ -236,6 +226,8 @@ static string InputMethodConfigIdentifier(const string& identifier)
     NSString *arrayTableRoot = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"DataTables"];
     OVInputMethod *inputMethod = new OpenVanilla::OVIMArray([arrayTableRoot UTF8String]);
     inputMethods.push_back(inputMethod);
+    OVInputMethod *big5Code = new OpenVanilla::OVIMBig5Code();
+    inputMethods.push_back(big5Code);
 
     for (vector<OVInputMethod*>::iterator i = inputMethods.begin(), e = inputMethods.end(); i != e; ++i) {
         OVInputMethod* inputMethod = *i;
@@ -282,7 +274,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
     }
 
     NSString *identifier = [NSString stringWithUTF8String:_associatedPhrasesModule->identifier().c_str()];
-    OVPlistBackedKeyValueMapImpl kvmi((CFStringRef)identifier);
+    OVPlistBackedKeyValueMapImpl kvmi((__bridge CFStringRef)identifier);
     OVKeyValueMap kvm(&kvmi);
     _associatedPhrasesModule->loadConfig(&kvm, _loaderService);
     _associatedPhrasesModule->saveConfig(&kvm, _loaderService);
@@ -332,7 +324,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
 - (void)writeOutActiveInputMethodSettings
 {
     if (_activeInputMethod) {
-        OVPlistBackedKeyValueMapImpl kvmi((CFStringRef)self.activeInputMethodIdentifier);
+        OVPlistBackedKeyValueMapImpl kvmi((__bridge CFStringRef)self.activeInputMethodIdentifier);
         OVKeyValueMap kvm(&kvmi);
         _activeInputMethod->saveConfig(&kvm, _loaderService);
     }
@@ -350,10 +342,10 @@ static string InputMethodConfigIdentifier(const string& identifier)
     }
 
     NSString *layout = nil;
-    id obj = (id)CFPreferencesCopyAppValue((CFStringRef)OVAlphanumericKeyboardLayoutKey, (CFStringRef)identifier);
+    id obj = (__bridge id)CFPreferencesCopyAppValue((CFStringRef)OVAlphanumericKeyboardLayoutKey, (CFStringRef)identifier);
 
     if (obj) {
-        layout = [NSMakeCollectable(obj) autorelease];
+        layout = obj;
         if (![layout isKindOfClass:[NSString class]]) {
             layout = nil;
         }
@@ -487,7 +479,7 @@ static string InputMethodConfigIdentifier(const string& identifier)
                 }
             }
 
-            NSString *output = [[[NSString alloc] initWithCharacters:chars length:length] autorelease];
+            NSString *output = [[NSString alloc] initWithCharacters:chars length:length];
             free(chars);
             return output;
         }

@@ -30,6 +30,9 @@
 
 using namespace OpenVanilla;
 
+// A macOS-specific OVKeyCode that represents the Enter key on the numpad,
+// or the key resulting from hitting Fn+Return.
+constexpr unsigned int kMacEnter = 3;
 
 OVIMTableBasedContext::OVIMTableBasedContext(OVIMTableBased* module)
     : m_module(module)
@@ -48,7 +51,18 @@ bool OVIMTableBasedContext::handleKey(OVKey* key, OVTextBuffer* readingText, OVT
         return false;
     }
 
-    if ((!key->receivedString().size() || key->isNumLockOn() || key->isCombinedFunctionKey()) && readingText->isEmpty()) {
+    bool isNumPadKey = key->isNumLockOn();
+    // If m_configOnlyUseNumPadNumbersForRadicals is true, "flip" the num pad key flag, so that
+    // the number keys in the standard key row would become num pad keys, and only the numbers
+    // coming from the num pad are treated as "normal" numbers.
+    //
+    // This is so as to allow certain input method tables to only use the num pad numbers as the
+    // radicals while allowing the numbers in the standard row to function as number keys.
+    if (key->keyCode() >= '0' && key->keyCode() <= '9' && m_module->m_configOnlyUseNumPadNumbersForRadicals) {
+        isNumPadKey = !isNumPadKey;
+    }
+
+    if ((!key->receivedString().size() || isNumPadKey || key->isCombinedFunctionKey()) && readingText->isEmpty()) {
         return false;
     }
 
@@ -57,8 +71,8 @@ bool OVIMTableBasedContext::handleKey(OVKey* key, OVTextBuffer* readingText, OVT
         composingText->commit();
         return true;
     }
-
-    if (key->isCapsLockOn() || key->isNumLockOn() || (key->isShiftPressed() && key->isKeyCodeAlpha())) {
+    
+    if (key->isCapsLockOn() || isNumPadKey || (key->isShiftPressed() && key->isKeyCodeAlpha() && !m_module->m_table->keynameMap()->isPairMapMixedCase())) {
         if (!readingText->isEmpty()) {
             readingText->clear();
             readingText->updateDisplay();
@@ -91,7 +105,7 @@ bool OVIMTableBasedContext::handleKey(OVKey* key, OVTextBuffer* readingText, OVT
         composingText->commit();
         return true;
     }
-
+    
     if (key->receivedString().size() && key->keyCode() != 32 && !key->isDirectTextKey()) {
         if (isValidKeyString(string(1, key->keyCode()))) {
             if (m_components.size() >= m_module->m_configMaximumRadicalLength) {
@@ -119,7 +133,7 @@ bool OVIMTableBasedContext::handleKey(OVKey* key, OVTextBuffer* readingText, OVT
             }
         }
     }
-    else if (key->keyCode() == OVKeyCode::Space || key->keyCode() == OVKeyCode::Return) {
+    else if (key->keyCode() == OVKeyCode::Space || key->keyCode() == OVKeyCode::Return || key->keyCode() == kMacEnter) {
         if (readingText->isEmpty()) {
 
             if (key->keyCode() == OVKeyCode::Space) {
@@ -140,7 +154,7 @@ bool OVIMTableBasedContext::handleKey(OVKey* key, OVTextBuffer* readingText, OVT
             return true;
         }
     }
-    else if (key->keyCode() == OVKeyCode::Esc) {
+    else if (key->keyCode() == OVKeyCode::Esc || key->keyCode() == OVKeyCode::Enter) {
         m_components.clear();
         readingText->clear();
         readingText->updateDisplay();
@@ -224,6 +238,17 @@ bool OVIMTableBasedContext::candidateNonPanelKeyReceived(OVCandidateService* can
             composingText->commit();
             return true;
         }
+    }
+
+    if (key->keyCode() == kMacEnter) {
+        panel->hide();
+        panel->cancelEventHandler();
+        m_components.clear();
+        readingText->clear();
+        readingText->updateDisplay();
+        composingText->setText(panel->candidateList()->candidateAtIndex(0));
+        composingText->commit();
+        return true;
     }
 
     if (!(currentCandidate.length() && isValidKeyString(string(1, key->keyCode())) && !key->isDirectTextKey())) {

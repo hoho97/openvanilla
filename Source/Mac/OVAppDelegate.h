@@ -31,8 +31,9 @@
 @interface OVAppDelegate : NSObject <NSApplicationDelegate>
 {
     OVPreferencesWindowController *_preferencesWindowController;
-    NSWindow *_window;
 }
-@property (assign) IBOutlet NSWindow *window;
+
+@property (weak) IBOutlet NSWindow *window;
 - (void)showPreferences;
++ (void)setDebugShowPreferencesAfterAppLaunched:(BOOL)show;
 @end

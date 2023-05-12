@@ -30,26 +30,16 @@
 static NSString *const kModuleIdentifier = @"org.openvanilla.OVAFAssociatedPhrases";
 
 @implementation OVAFAssociatedPhrasesPreferencesViewController
-@synthesize fieldContinuousAssociation = _fieldContinuousAssociation;
-@synthesize fieldSelectionKeys = _fieldSelectionKeys;
 
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
     self = [super initWithCoder:aDecoder];
     if (self) {
         self.moduleIdentifier = kModuleIdentifier;
-        _defaultSelectionKeys = [[NSArray arrayWithObjects:
-                                 @"!@#$%^&*()", @"!@#$%^&*(", @"1234567890", @"123456789", nil] retain];
-        _defaultSelectionKeyTitles = [[NSArray arrayWithObjects:
-                                 @"Shift-1 ~ Shift-0", @"Shift-1 ~ Shift-9", @"1234567890", @"123456789", nil] retain];
+        _defaultSelectionKeys = @[@"!@#$%^&*()", @"!@#$%^&*(", @"1234567890", @"123456789"];
+        _defaultSelectionKeyTitles = @[@"Shift-1 ~ Shift-0", @"Shift-1 ~ Shift-9", @"1234567890", @"123456789"];
     }
     return self;
-}
-
-- (void)dealloc {
-    [_defaultSelectionKeys release];
-    [_defaultSelectionKeyTitles release];
-    [super dealloc];
 }
 
 - (IBAction)updateField:(id)sender
@@ -62,17 +52,13 @@ static NSString *const kModuleIdentifier = @"org.openvanilla.OVAFAssociatedPhras
     }
 
     NSString *newSelectionKeys;
-    if (selectedIndex < [_defaultSelectionKeyTitles count]) {
-        newSelectionKeys = [_defaultSelectionKeys objectAtIndex:selectedIndex];
-    } else {
-        newSelectionKeys = [_defaultSelectionKeyTitles objectAtIndex:selectedIndex];
-    }
+    newSelectionKeys = (selectedIndex < _defaultSelectionKeyTitles.count ? _defaultSelectionKeys : _defaultSelectionKeyTitles)[selectedIndex];
     [self setStringValue:newSelectionKeys forKey:@"SelectionKeys"];
 }
 
 - (void)setStateForButton:(NSButton *)button forKey:(NSString *)key
 {
-    [button setState:([self boolValueForKey:key] ? NSOnState : NSOffState)];
+    button.state = [self boolValueForKey:key] ? NSOnState : NSOffState;
 }
 
 - (void)loadPreferences
@@ -92,7 +78,8 @@ static NSString *const kModuleIdentifier = @"org.openvanilla.OVAFAssociatedPhras
         NSArray *titles = [_defaultSelectionKeyTitles arrayByAddingObject:selectionKeys];
         [self.fieldSelectionKeys addItemsWithTitles:titles];
         [self.fieldSelectionKeys selectItemAtIndex:[titles count] - 1];
-    } else {
+    }
+    else {
         [self.fieldSelectionKeys addItemsWithTitles:_defaultSelectionKeyTitles];
         [self.fieldSelectionKeys selectItemAtIndex:selectedIndex];
     }

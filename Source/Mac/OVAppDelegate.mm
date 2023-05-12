@@ -27,21 +27,17 @@
 
 #import "OVAppDelegate.h"
 #import "OVModuleManager.h"
-#import "OVPreferencesWindowController.h"
+
+static BOOL DebugShowPreferencesAfterAppLaunched = NO;
 
 @implementation OVAppDelegate
-
-@synthesize window = _window;
-
-- (void)dealloc
-{
-    [_preferencesWindowController release];
-    [super dealloc];
-}
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [[OVModuleManager defaultManager] reload];
+    if (DebugShowPreferencesAfterAppLaunched) {
+        [self showPreferences];
+    }
 }
 
 - (void)showPreferences
@@ -49,7 +45,12 @@
     if (!_preferencesWindowController) {
         _preferencesWindowController = [[OVPreferencesWindowController alloc] initWithWindowNibName:@"preferences"];
     }
-    [[_preferencesWindowController window] center];
-    [[_preferencesWindowController window] orderFront:self];
+    [_preferencesWindowController.window center];
+    [_preferencesWindowController.window orderFront:self];
+}
+
++ (void)setDebugShowPreferencesAfterAppLaunched:(BOOL)show
+{
+    DebugShowPreferencesAfterAppLaunched = YES;
 }
 @end

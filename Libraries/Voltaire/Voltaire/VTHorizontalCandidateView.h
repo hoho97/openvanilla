@@ -38,10 +38,7 @@
     NSDictionary *_keyLabelAttrDict;
     NSDictionary *_candidateAttrDict;
     NSArray *_elementWidths;
-    NSUInteger _highlightedIndex;
     NSUInteger _trackingHighlightedIndex;
-    SEL _action;
-    __weak id _target;
 }
 
 - (void)setKeyLabels:(NSArray *)labels displayedCandidates:(NSArray *)candidates;
@@ -50,5 +47,5 @@
 @property (readonly, nonatomic) NSSize sizeForView;
 @property (assign, nonatomic) NSUInteger highlightedIndex;
 @property (assign, nonatomic) SEL action;
-@property (weak, assign, nonatomic) id target;
+@property (weak, nonatomic) id target;
 @end

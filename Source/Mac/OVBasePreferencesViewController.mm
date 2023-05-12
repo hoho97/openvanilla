@@ -30,7 +30,6 @@
 #import "OVModuleManager.h"
 
 @implementation OVBasePreferencesViewController
-@synthesize moduleIdentifier = _moduleIdentifier;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -38,15 +37,10 @@
     if (self) {
         // Initialization code here.
     }
-    
+
     return self;
 }
 
-- (void)dealloc
-{
-    [_moduleIdentifier release];
-    [super dealloc];
-}
 
 - (void)configureKeyboardLayoutList:(NSPopUpButton *)popUpButton
 {
@@ -61,7 +55,7 @@
     NSMenuItem *usKeyboardLayoutItem = nil;
     NSMenuItem *chosenItem = nil;
 
-    [[popUpButton menu] removeAllItems];
+    [popUpButton.menu removeAllItems];
 
     for (int i = 0; i < CFArrayGetCount(list); i++) {
         TISInputSourceRef source = (TISInputSourceRef)CFArrayGetValueAtIndex(list, i);
@@ -81,12 +75,12 @@
             continue;
         }
 
-        NSString *sourceID = (NSString *)TISGetInputSourceProperty(source, kTISPropertyInputSourceID);
-        NSString *localizedName = (NSString *)TISGetInputSourceProperty(source, kTISPropertyLocalizedName);
+        NSString *sourceID = (__bridge NSString *)TISGetInputSourceProperty(source, kTISPropertyInputSourceID);
+        NSString *localizedName = (__bridge NSString *)TISGetInputSourceProperty(source, kTISPropertyLocalizedName);
 
-        NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
-        [item setTitle:localizedName];
-        [item setRepresentedObject:sourceID];
+        NSMenuItem *item = [[NSMenuItem alloc] init];
+        item.title = localizedName;
+        item.representedObject = sourceID;
 
         if ([sourceID isEqualToString:defaultIdentifier]) {
             usKeyboardLayoutItem = item;
@@ -97,7 +91,7 @@
             chosenItem = item;
         }
 
-        [[popUpButton menu] addItem:item];
+        [popUpButton.menu addItem:item];
     }
 
     if (chosenItem) {
@@ -106,7 +100,7 @@
     else if (usKeyboardLayoutItem) {
         [popUpButton selectItem:usKeyboardLayoutItem];
     }
-    
+
     CFRelease(list);
 
 }
